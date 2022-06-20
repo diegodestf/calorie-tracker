@@ -1,17 +1,17 @@
 const ItemCtrl = (() => {
     class Item {
-        constructor(id, name, item) {
+        constructor(id, name, calories) {
             this.id = id
             this.name = name
-            this.item = item
+            this.calories = calories
         }
     }
 
     const data = {
         items: [
-            {id: 0, name: 'Steak Dinner', calories: 1200},
-            {id: 1, name: 'Chicken Thighs', calories: 600},
-            {id: 2, name: 'Apple', calories: 150}
+            // {id: 0, name: 'Steak Dinner', calories: 1200},
+            // {id: 1, name: 'Chicken Thighs', calories: 600},
+            // {id: 2, name: 'Apple', calories: 150}
         ],
         currentItem: null,
         totalCalories: 0
@@ -55,7 +55,7 @@ const UICtrl = (() => {
 
             items.forEach(item => {
                 html += `<li class="collection-item" id="item-${item.id}">
-                <strong>${item.name}: <em>${item.calories} Calories</em></strong>
+                <strong>${item.name}:</strong> <em>${item.calories} Calories</em>
                 <a href="#" class="secondary-content">
                     <i class="edit-item fa fa-pencil"></i>
                 </a>
@@ -72,6 +72,28 @@ const UICtrl = (() => {
                 name: document.querySelector(UISelectors.itemNameInput).value,
                 calories: document.querySelector(UISelectors.itemCaloriesInput).value
             }
+        },
+        addListItem: (item) => {
+            document.querySelector(UISelectors.itemList).style.display = 'block'
+
+            const li = document.createElement('li')
+
+            li.className = 'collection-item'
+
+            li.id = `item-${item.id}`
+
+            li.innerHTML = `<strong>${item.name}:</strong> <em>${item.calories} Calories</em>
+            <a href="#" class="secondary-content">
+                <i class="edit-item fa fa-pencil"></i>
+            </a>`
+            document.querySelector(UISelectors.itemList).insertAdjacentElement('beforeend', li)
+        },
+        clearInput: () => {
+            document.querySelector(UISelectors.itemNameInput).value = ''
+            document.querySelector(UISelectors.itemCaloriesInput).value = ''
+        },
+        hideList: () => {
+            document.querySelector(UISelectors.itemList).style.display = 'none'
         }
     }
 })()
@@ -88,6 +110,10 @@ const AppCtrl = ((ItemCtrl, UICtrl) => {
 
         if (input.name !== '' && input.calories !== '') {
             const newItem = ItemCtrl.addItem(input.name, input.calories)
+
+            UICtrl.addListItem(newItem)
+
+            UICtrl.clearInput()
         }
 
         e.preventDefault()
@@ -95,8 +121,12 @@ const AppCtrl = ((ItemCtrl, UICtrl) => {
     return {
         init: () => {
             const items = ItemCtrl.getItems()
-            
-            UICtrl.populateItemList(items)
+
+            if (items.length === 0) {
+                UICtrl.hideList()
+            } else {
+                UICtrl.populateItemList(items)
+            }
 
             loadEventListeners()
         }
