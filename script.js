@@ -1,4 +1,4 @@
-const ItemCtrl = (function() {
+const ItemCtrl = (() => {
     class Item {
         constructor(id, name, item) {
             this.id = id
@@ -18,20 +18,43 @@ const ItemCtrl = (function() {
     }
 
     return { 
-        logData: function() {
+        getItems: () => {
+            return data.items
+        },
+        logData: () => {
             return data
         }
     }
 })()
 
-const UICtrl = (function() {
-    console.log('itemcontroller')
+const UICtrl = (() => {
+    const UISelectors = {
+        itemList: '#item-list'
+    }
+    return {
+        populateItemList: (items) => {
+            let html = ''
+
+            items.forEach(item => {
+                html += `<li class="collection-item" id="item-${item.id}">
+                <strong>${item.name}: <em>${item.calories} Calories</em></strong>
+                <a href="#" class="secondary-content">
+                    <i class="edit-item fa fa-pencil"></i>
+                </a>
+            </li>`
+            });
+
+            document.querySelector(UISelectors.itemList).innerHTML = html
+        }
+    }
 })()
 
-const AppCtrl = (function(ItemCtrl, UICtrl) {
+const AppCtrl = ((ItemCtrl, UICtrl) => {
     return {
-        init: function() {
-            console.log('Initializing app...')
+        init: () => {
+            const items = ItemCtrl.getItems()
+            
+            UICtrl.populateItemList(items)
         }
     }
 })(ItemCtrl, UICtrl)
