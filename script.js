@@ -79,6 +79,19 @@ const ItemCtrl = (() => {
                 }
             })
             return found
+        },
+        deleteItem: (id) => {
+
+            const ids = data.items.map(item => {
+                return item.id
+            })
+
+            const index = ids.indexOf(id)
+
+            data.items.splice(index, 1)
+        },
+        clearAllItems: () => {
+            data.items = []
         }
     }
 })()
@@ -91,6 +104,7 @@ const UICtrl = (() => {
         updateBtn: '.update-btn',
         deleteBtn: '.delete-btn',
         backBtn: '.back-btn',
+        clearBtn: '.clear-btn',
         itemNameInput: '#item-name',
         itemCaloriesInput: '#item-calories',
         totalCalories: '.total-calories'
@@ -178,6 +192,22 @@ const UICtrl = (() => {
                     </a>`
                 }
             })
+        },
+        deleteListItem: (id) => {
+            const itemID = `#item-${id}`
+
+            const item = document.querySelector(itemID)
+
+            item.remove()
+        },
+        removeItems: () => {
+            let listItems = document.querySelectorAll(UISelectors.listItems)
+
+            listsItems = Array.from(listItems)
+
+            listItems.forEach(item => {
+                item.remove()
+            })
         }
     }
 })()
@@ -190,7 +220,7 @@ const AppCtrl = ((ItemCtrl, UICtrl) => {
         document.querySelector(UISelectors.addBtn).addEventListener('click', itemAddSubmit)
 
         document.addEventListener('keypress', (e) => {
-            if (e.code === 13 || e.which === 13) {
+            if (e.code === 13 || e.key === 'Enter') {
                 e.preventDefault()
                 return false
             }
@@ -199,6 +229,43 @@ const AppCtrl = ((ItemCtrl, UICtrl) => {
         document.querySelector(UISelectors.itemList).addEventListener('click', itemEditClick)
 
         document.querySelector(UISelectors.updateBtn).addEventListener('click', itemUpdateSubmit)
+
+        document.querySelector(UISelectors.backBtn).addEventListener('click', UICtrl.clearEditState)
+
+        document.querySelector(UISelectors.deleteBtn).addEventListener('click', itemDeleteSubmit)
+
+        document.querySelector(UISelectors.clearBtn).addEventListener('click', clearAllItemsClick)
+    }
+
+    const clearAllItemsClick = () => {
+        ItemCtrl.clearAllItems()
+
+        const totalCalories = ItemCtrl.getTotalCalories()
+
+        UICtrl.showTotalCalories(totalCalories)
+
+        UICtrl.clearEditState()
+
+        UICtrl.removeItems()
+
+        UICtrl.hideList()
+        
+    }
+
+    const itemDeleteSubmit = (e) => {
+        const currentItem = ItemCtrl.getCurrentItem()
+
+        ItemCtrl.deleteItem(currentItem.id)
+
+        UICtrl.deleteListItem(currentItem.id)
+
+        const totalCalories = ItemCtrl.getTotalCalories()
+
+        UICtrl.showTotalCalories(totalCalories)
+
+        UICtrl.clearEditState()
+
+        e.preventDefault()
     }
 
     const itemUpdateSubmit = (e) => {
