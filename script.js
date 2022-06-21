@@ -1,3 +1,57 @@
+const StorageCtrl = (() => {
+    return {
+        storeItem: (item) => {
+            let items
+
+            if (localStorage.getItem('items') === null) {
+                items = []
+
+                items.push(item)
+
+                localStorage.setItem('items', JSON.stringify(items))
+            } else {
+                items = JSON.parse(localStorage.getItem('items'))
+
+                items.push(item)
+
+                localStorage.setItem('items', JSON.stringify(items))
+            }
+        },
+        getItemsFromStorage: () => {
+            let items
+            if (localStorage.getItem('items') === null) {
+                items = []
+            } else {
+                items = JSON.parse(localStorage.getItem('items'))
+            }
+            return items
+        },
+        updateItemStorage: (updatedItem) => {
+            let items = JSON.parse(localStorage.getItem('items'))
+
+            items.forEach((item, index) => {
+                if(updatedItem.id === item.id) {
+                    items.splice(index, 1, updatedItem)
+                }
+            })
+            localStorage.setItem('items', JSON.stringify(items))
+        },
+        deleteItemFromStorage: (id) => {
+            let items = JSON.parse(localStorage.getItem('items'))
+
+            items.forEach((item, index) => {
+                if(id === item.id) {
+                    items.splice(index, 1)
+                }
+            })
+            localStorage.setItem('items', JSON.stringify(items))
+        },
+        clearItemsFromStorage: () => {
+            localStorage.removeItem('items')
+        }
+    }
+})()
+
 const ItemCtrl = (() => {
     class Item {
         constructor(id, name, calories) {
@@ -8,11 +62,7 @@ const ItemCtrl = (() => {
     }
 
     const data = {
-        items: [
-            // {id: 0, name: 'Steak Dinner', calories: 1200},
-            // {id: 1, name: 'Chicken Thighs', calories: 600},
-            // {id: 2, name: 'Apple', calories: 150}
-        ],
+        items: StorageCtrl.getItemsFromStorage(),
         currentItem: null,
         totalCalories: 0
     }
@@ -212,7 +262,7 @@ const UICtrl = (() => {
     }
 })()
 
-const AppCtrl = ((ItemCtrl, UICtrl) => {
+const AppCtrl = ((ItemCtrl, StorageCtrl, UICtrl) => {
     const loadEventListeners = () => {
 
         const UISelectors = UICtrl.getSelectors()
@@ -248,6 +298,8 @@ const AppCtrl = ((ItemCtrl, UICtrl) => {
 
         UICtrl.removeItems()
 
+        StorageCtrl.clearItemsFromStorage()
+
         UICtrl.hideList()
         
     }
@@ -262,6 +314,8 @@ const AppCtrl = ((ItemCtrl, UICtrl) => {
         const totalCalories = ItemCtrl.getTotalCalories()
 
         UICtrl.showTotalCalories(totalCalories)
+
+        StorageCtrl.deleteItemFromStorage(currentItem.id)
 
         UICtrl.clearEditState()
 
@@ -278,6 +332,8 @@ const AppCtrl = ((ItemCtrl, UICtrl) => {
         const totalCalories = ItemCtrl.getTotalCalories()
 
         UICtrl.showTotalCalories(totalCalories)
+
+        StorageCtrl.updateItemStorage(updatedItem)
 
         UICtrl.clearEditState()
 
@@ -314,6 +370,8 @@ const AppCtrl = ((ItemCtrl, UICtrl) => {
 
             UICtrl.showTotalCalories(totalCalories)
 
+            StorageCtrl.storeItem(newItem)
+
             UICtrl.clearInput()
         }
 
@@ -338,6 +396,6 @@ const AppCtrl = ((ItemCtrl, UICtrl) => {
             loadEventListeners()
         }
     }
-})(ItemCtrl, UICtrl)
+})(ItemCtrl, StorageCtrl, UICtrl)
 
 AppCtrl.init()
